@@ -19,42 +19,42 @@ A new window will pop up showing your image. Use your cursor to mark object seed
 
 Original, seeded, and segmented image
 
-![test1.jpg](test1.jpg) 
+![examples/test1.jpg](test1.jpg) 
 
-![test1seeds.jpg](test1seeds.jpg) 
+![examples/test1seeds.jpg](test1seeds.jpg) 
 
-![test1cut.jpg](test1cut.jpg)
+![examples/test1cut.jpg](test1cut.jpg)
 
 2. `test2.jpg`
 
 Original, seeded, and segmented image
 
-![test2.jpg](test2.jpg)
+![examples/test2.jpg](test2.jpg)
 
-![test2seeds.jpg](test2seeds.jpg)
+![examples/test2seeds.jpg](test2seeds.jpg)
 
-![test2cut.jpg](test2cut.jpg)
+![examples/test2cut.jpg](test2cut.jpg)
 
 3. `test3.jpg`
 
 Original, seeded, and segmented image
 
-![test3.jpg](test3.jpg)
+![examples/test3.jpg](test3.jpg)
 
-![test3seeds.jpg](test3seeds.jpg)
+![examples/test3seeds.jpg](test3seeds.jpg)
 
-![test3cut.jpg](test3cut.jpg)
+![examples/test3cut.jpg](test3cut.jpg)
 
 
 1. `baby.jpg`
 
 Original, seeded, and segmented image
 
-![baby.jpg](baby.jpg)
+![examples/baby.jpg](baby.jpg)
 
-![babyseeds.jpg](babyseeds.jpg)
+![examples/babyseeds.jpg](babyseeds.jpg)
 
-![babycut.jpg](babycut.jpg)
+![examples/babycut.jpg](babycut.jpg)
 
 ## To dos
 
