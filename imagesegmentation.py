@@ -186,7 +186,7 @@ def displayCut(image, cuts):
 
 def imageSegmentation():
     image = cv2.imread(filename, cv2.IMREAD_GRAYSCALE)
-    # image = cv2.resize(image, (0, 0), fx=sf, fy=sf)
+    image = cv2.resize(image, (0, 0), fx= 1 / sf, fy=1 / sf)
     print image.shape
     # show_image(image)
 
