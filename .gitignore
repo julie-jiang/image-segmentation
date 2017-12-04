@@ -1,0 +1,5 @@
+*.cpp
+*.pyc
+*.npy
+BSDS300/
+deprecated/
