@@ -34,7 +34,7 @@ Original, seeded, and segmented image
 ![test3.jpg](examples/test3.jpg)![test3seeds.jpg](examples/test3seeds.jpg)![test3cut.jpg](examples/test3cut.jpg)
 
 
-1. `baby.jpg`
+4. `baby.jpg`
 
 Original, seeded, and segmented image
 
