@@ -18,11 +18,6 @@ def bfs(rGraph, V, s, t, parent):
     return visited[v]
 
 def dfs(rGraph, V, s, visited):
-    # visited[s] = True
-    # for i in xrange(V):
-    #     if rGraph[s][i] and not visited[i]:
-    #         dfs(rGraph, V, i, visited)
-
     stack = [s]
     while stack:
         v = stack.pop()
@@ -39,7 +34,6 @@ def augmentingPath(graph, s, t):
     parent = np.zeros(V, dtype='int32')
 
     while bfs(rGraph, V, s, t, parent):
-        
         pathFlow = float("inf")
         v = t
         while v != s:
@@ -53,7 +47,6 @@ def augmentingPath(graph, s, t):
             rGraph[u][v] -= pathFlow
             rGraph[v][u] += pathFlow
             v = parent[v]
-
 
     visited = np.zeros(V, dtype=bool)
     dfs(rGraph, V, s, visited)

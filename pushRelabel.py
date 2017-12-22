@@ -89,14 +89,21 @@ def pushRelabel(C, s, t):
                 return v
         return None
     def push(u):
+        # print "pushing", u
         # assert(excess[u] > 0)
         for v in xrange(V):
             if C[u,v] > F[u,v] and heights[u] == heights[v] + 1:
                 flow = min(C[u,v] - F[u,v], excess[u])
-                if C[u,v] > 0:
-                    F[u,v] += flow
-                else:
+                # if C[u,v] > 0:
+                F[u,v] += flow
+
+                # if C[u,v] == 0:
+                #     F[v,u] -= flow
+                if C[v,u] > F[v,u]:
                     F[v,u] -= flow
+                else:
+                    F[v,u] = 0
+                    C[v,u] = flow
                 excess[u] -= flow 
                 excess[v] += flow 
                 # F[u,v] += flow  
@@ -105,9 +112,9 @@ def pushRelabel(C, s, t):
         return False
     def relabel(u):
         # assert(excess[u] > 0)
-        # print heights, u
-        # assert([heights[u] <= heights[v] for v in xrange(V) if C[u,v] > F[u,v]])
-        heights[u] = min([heights[v] for v in xrange(V) if C[u,v] > F[u,v]]) + 1
+        # print "relabling", u, heights
+        assert([heights[u] <= heights[v] for v in xrange(V) if C[u,v] > F[u,v]])
+        heights[u] = 1 + min([heights[v] for v in xrange(V) if C[u,v] > F[u,v]])
 
 
 

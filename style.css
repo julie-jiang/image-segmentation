@@ -1,37 +1,132 @@
-@import url('https://fonts.googleapis.com/css?family=Open+Sans:700|Lato:400|Lora:400,700');
+@import url('https://fonts.googleapis.com/css?family=Open+Sans:700|Lato:400|Lora:400,700|Inconsolata|Oswald');
 body {
     margin: auto;
     padding: 0;
+    /*width: 100;*/
+}
+.contents{
+    /*width: 90%;*/
+    margin-left: 25%;
+    margin-right: 15%;
     width: 850px;
+    margin-bottom: 500px;
 }
 
-h1 {
+.contents h1 {
     font-family: "Open Sans", Helvetica, sans-serif;
     font-size: 3em;
+    border-bottom: solid;
+    border-bottom-color: #afafaf;
 }
 
-h2 {
+.contents h2 {
     font-family: "Lato", Helvetica, sans-serif;
     font-size: 2em;
     color:#282828;
 }
-`
-h3 {
-    font-family: "Lora", "PT Serif", serif;
-    color: #3A3A3A;
-    font-size: 1em;
+
+.contents h3 {
+    font-family: "PT Sans", sans-serif;
+    color: #6d6d6d;
+    font-size: 0.85em;
+    line-height: 0%;
+    padding: 0;
+    margin: 0;
+    font-weight: normal;
+    text-decoration: none;
 }
 
-p {
+.contents p {
     font-family: "Lora", "PT Serif", serif;
-    font-size: 1em;
+    font-size: 18px;
     line-height: 150%;
     color: #282828;
 }
 
-ul li {
+.contents ul li {
     font-family: "Lora", "PT Serif", serif;
-    font-size: 1em;
+    font-size: 0.9em;
     line-height: 150%;
     color: #282828;
 }
+
+code {
+    /*display: block;*/
+    background-color: #f2f2f2;
+    font-family: "Inconsolata", monospace;
+    font-size: 18px;
+}
+pre code {
+    display: block;
+    padding: 0.5em;
+    font-family: "Inconsolata", monospace;
+    font-size: 18px;
+}
+figure {
+    display: block;
+    margin:auto;
+}
+figure img{
+    display: block;
+    margin:auto;
+}
+figure figcaption{
+    display: block;
+    margin: auto;
+    font-size:0.8em;
+    color: #282828;
+    text-align: center;
+    width: 70%;
+    font-family:"Lora", "PT Serif", serif; 
+}
+
+
+.nav{
+    width: 20%;
+    max-width: 150px;
+    height: 100%;
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    padding-top: 10%;
+    padding-left: 5%;
+    padding-right: 2%;
+}
+
+
+.nav a {
+    display: block;
+    transition: 0.3s;
+    font-family: "Oswald", Helvetica, sans-serif;
+    font-size: 1em;
+    color:#282828;
+    line-height:50px;
+    text-decoration: none;
+}
+
+.nav a::hover{
+    color:#999999;
+    text-decoration: underline;
+}
+
+#usagePics img{
+    float: left;
+    padding: 1%;
+    width: 28%;
+    min-width: 250px;
+}
+.results figure {
+    display: block;
+    position: absolute;
+}
+
+.results img {
+    float: left;
+    width:  270px;
+    padding: 5%;
+}
+
+
+
+
+

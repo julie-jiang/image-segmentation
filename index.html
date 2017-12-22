@@ -11,66 +11,163 @@
     </script>
     </head>
     <body>
-      <h1> Image Segmentation with Graph Cuts</h1>
-      <h3> By Julie Jiang </h3>
-        <p> Graph algorithms has been successfully applied to a number of computer vision and image processing problems. Our interest is in the application of graph cut algorithms to the problem of image segmentation. This is arguably one of the simplist applications.</p>
-        <p>
-        This project focuses on using graph cuts to divide an image into background and foreground segments. The framework consists of two parts. First, we build a network flow graph based on the input image. Then we run a max flow algorithm in order to find the min cut, which produces our optimal segmentation.
-         </p>
-      <h2> Network Flow </h2>
-        <p> A network flow $G=(V,E)$ is a graph where each edge has a <i> capacity </i> and a <i> flow </i>. We designate two vertices in the network flow to be the source vertex $s$ and the sink vertex $t$, respectively. We want to find the maximum amount of flow that could be delivered from $s$ to $t$, while satisfying the following constraints. </p>
-        <p>
-          <ul>
-            <li><b>Capacity constraint: </b> Each edge $(u,v)\in E$ has a nonnegative capacity $c(u,v)$ that must be greater than of equal to its flow $f(u,v)$.
-              $$0\leq f(u,v)\leq c(u,v)$$
-            </li>
-            <li><b>Flow conservation: </b> For all vertices $u\in V-{s,t}$, we require that the inflow of the vertex is equal to its outflow.
-              $$\sum_{v\in V}f(v,u)=\sum_{v\in V}f(u,v)$$
-            But $s$ can have unlimited inflow, and $t$ can have unlimited outflow.
-            </li>
-          </ul>
-        </p>
-        <p> The flow of the network is the flow we can send through some path from $s$ to $t$, which, by conservation of flow, is equal to the inflow of $s$ or the outflow of $t$.  An $s/t$ cut is a partitioning of the vertices into two disjoint subsets such that one contains $s$ and the other contains $t$. The value of an $s/t$ cut is total flow of the edges passing through the cut.
-        </p>
-        <p>
-        As stated by the <b> max-flow min-cut theorem </b>, the maximum amount of flow passing from the source to the sink is equivalent to the net flow of the edges in the minimum cut. So by solving the max flow problem, we directly solve the min cut problem as well. We will discuss algorithms for finding the max flow or min cut later.
-        </p> 
+      <div class="nav">
+        <a href="#networkflow"> NETWORK FLOW</a>
+        <a href="#image2graph"> IMAGE TO GRAPH </a>
+        <a href="#algos"> ALGORITHMS</a>
+        <a href="#usage"> USAGE</a>
+        <a href="#limits"> LIMITATIONS</a>
+        <a href="#res"> RESULTS</a>
+        <a href="#ref"> REFERENCES </a>
+      </div>
+      <div class="contents">
 
-      <h2> Image to Graph </h2>
-        <p>
-        One of the most challenging thing about this project is how to transform an image into a graph. <i>Graph cuts and efficient N-D image segmentation</i> by Boykov and Funka-Lea, the authors described in great detail how to define a graph based on an image. My implementation closely follows their idea of constructing the graph.
-        </p>
-        <p>
-        To begin with, a pixel in the image is a vertex in the graph. In addition, we also have two extra vertices which acts as the source and the sink. To avoid confusion, we call vertices that are neither the source nor the sink <i>pixel vertices</i>. 
-        </p>
-        <p>
-        There are two types of edges in our graph. The first type is called $n$-links, which connects neighboring pixel vertices in a 4-neighboring system. The second type of edges are called $t$-links. These links connect the source or sink vertex with the pixel vertices. 
-        </p>
-        <p>The $n$-link edges must have weights carefully computed in order to reflect inter-pixel similarities. One idea is to let these be the boundary penalty. Let $I_p$ be the brightness, or intensity, of the pixel vertex $p$. For any edge $(p,q)\in E$, we define the boundary penalty $B(I_p, I_q)$ as follows.
-          $$ B(I_p, I_q) = 100\cdot \exp\Bigg(\frac{-(I_p-I_q)^2}{2\sigma ^2}\Bigg)$$
+        <h1> Image Segmentation with Graph Cuts</h1>
+        <h3> By JULIE JIANG</h3>
+          <p> Graph algorithms have been successfully applied to a number of computer vision and image processing problems. Our interest is in the application of graph cut algorithms to the problem of image segmentation. </p>
+          <p>
+          This project focuses on using graph cuts to divide an image into background and foreground segments. The framework consists of two parts. First, a network flow graph is built based on the input image. Then a max-flow algorithm is run on the graph in order to find the min-cut, which produces the optimal segmentation.
+           </p>
+        <h2 id="networkflow"> Network Flow </h2>
+          <p> A network flow $G=(V,E)$ is a graph where each edge has a <i> capacity </i> and a <i> flow</i>. Two vertices in the network flow are designated to be the source vertex $s$ and the sink vertex $t$, respectively. The goal is to find the maximum amount of flow that could be delivered from $s$ to $t$, while satisfying the following constraints. </p>
+          <p>
+            <ul>
+              <li><b>Capacity constraint: </b> Each edge $(u,v)\in E$ has a nonnegative capacity $c(u,v)$ that must be greater than or equal to its flow $f(u,v)$.
+                $$0\leq f(u,v)\leq c(u,v)$$
+              </li>
+              <li><b>Flow conservation: </b> For all vertices $u\in V-{s,t}$, we require that the inflow of the vertex is equal to its outflow.
+                $$\sum_{v\in V}f(v,u)=\sum_{v\in V}f(u,v)$$
+              But $s$ can have unlimited inflow, and $t$ can have unlimited outflow.
+              </li>
+            </ul>
+          </p>
+          <p> The flow of the network is the flow that can be sent through some path from $s$ to $t$, which, by conservation of flow, is equal to the inflow of $s$ or the outflow of $t$.  An $s/t$ cut is a partitioning of the vertices into two disjoint subsets such that one contains $s$ and the other contains $t$. The value of an $s/t$ cut is the total flow of the edges passing through the cut.
+          </p>
+          <p>
+          As stated by the <b> max-flow min-cut theorem</b>, the maximum amount of flow passing from the source to the sink is equivalent to the net flow of the edges in the minimum cut. So by solving the max-flow problem, we directly solve the min-cut problem as well. We will discuss algorithms for finding the max-flow or min-cut in a later section.
+          </p> 
 
-        </p> 
-        <p>This function penalizes a lot when $|I_p-I_q|<\sigma$, and is quite negligible if $|I_p-I_q|>\sigma$. From empirical results, we choose $\sigma=30$. Finally, we multiply the result by 100 and cast the boundary penalty to an integer. This is because network flow models require that the capacities be discrete rather than continuous. 
-        </p>
-        <p> To help with making $t$-links, we prompt the user to highlight at least one pixel vertex as a background pixel and at least one as a foreground pixel. These pixel verties are called seeds. For every background seed there is, we add an edge from the source to the background seed with capacity $\mathcal{K}$ defined as follows. 
-          $$ \mathcal {K} = \max(\{B(I_p, I_q)|(p, q)\in E\}) $$
-        In a similar fashion, We also add edges from the foreground seeds to the sink with capacity $\mathcal{K}$.
+        <h2 id="image2graph"> Image to Graph </h2>
+          <p>
+          One of the most challenging thing about this project is how to transform an image into a graph. <i>Graph cuts and efficient N-D image segmentation</i> by Boykov and Funka-Lea, the authors described in great detail how to define a graph based on an image. Our implementation closely follows their idea of constructing the graph. For simplicities, we will use grayscale square images. Although the same idea could be easily extended for color images with a suitable inter-pixel similarity measurement. The images are only squared for the sake of convenience.</p>
+          <p>
+          To begin with, a pixel in the image is a vertex in the graph labeled in row-major order. These vertices are called pixel vertices. In addition, there are two extra vertices that serve as the source and the sink.
+          </p>
+          <p>
+          There are two types of edges in our graph. The first type is called $n$-links, which connects neighboring pixel vertices in a 4-neighboring system. The second type of edges is called $t$-links. These links connect the source or sink vertex with the pixel vertices. 
+          </p>
+          <p>The $n$-link edges must have weights carefully computed in order to reflect inter-pixel similarities. Concretely, we want the weight of an edge to be big with the two pixels are similar, and small when they are quite different. One idea is to let the weight be boundary penalty, a function that maps two pixel intensities to a positive integer. Let $I_p$ be the brightness, or intensity, of the pixel vertex $p$. For any edge $(p,q)\in E$, the boundary penalty $B(I_p, I_q)$ is defined to be
+            $$ B(I_p, I_q) = 100\cdot \exp\Bigg(\frac{-(I_p-I_q)^2}{2\sigma ^2}\Bigg)$$
 
+          </p> 
+          <p>This choice of function is determined by a series of trial and error. It penalizes a lot when $|I_p-I_q|<\sigma$, and is quite negligible if $|I_p-I_q|>\sigma$. From empirical results, we choose $\sigma=30$. Finally, the result is multiplied by 100 and cast to an integer. This is because network flow models require that the capacities be discrete rather than continuous. 
+          </p>
+          <p> To help with making $t$-links, the user is prompted to highlight at least one pixel vertex as a background pixel and at least one as a foreground pixel. These pixel vertices are called seeds. For every background seed, an edge is added from the source to the background seed with capacity $\mathcal{K}$ defined as follows. 
+            $$ \mathcal {K} = \max(\{B(I_p, I_q)|(p, q)\in E\}) $$
+          In a similar fashion, edges to the sink are added for every foreground seeds ith capacity $\mathcal{K}$.
+
+          </p>
+          <p>
+          As these seeds share an edge with the source or sink, they are hard-coded to be either the foreground or the background. </p>
+          <figure>
+          <img src="images/imagetograph.png", alt="Image to Graph">
+          <figcaption> An example network defined on a simple 3x3 image with a background seed and a foreground seed (Boykov and Funka-Lea, 2006). </figcaption>
+          </figure>
+          <p>
+          Now with the graph full defined, we can run a graph cut algorithm to find the minimum cut. 
+        <h2 id="algos"> Algorithms</h2>
+        <p>
+        There are several algorithms for finding the maximum flow. This project explores the efficiency of Edmonds-Karp algorithm and push-relabel algorithm. These are very standard, straightforward algorithms, but are often slow in practice. </p>
+        <p><b>Edmonds-Karp Algorithm </b></p>
+        <p>
+        The Edmonds-Karp algorithm is an implementation of the Ford-Fulkerson method. First, we define a residual network $G_f=(V,E_f)$ to be the same network but with capacity $c_f(u,v)=c(u,v)-f(u,v)$ and no flow. The idea behind the Ford-Fulkerson method is that if there exists a path from $s$ to $t$ in the residual network, then we can augment the current flow by this path. This path is called the augmenting path. The augmentation of this path is equal to the smallest residual capacity along this path. Once no augmenting path can be found, the current flow must be the max-flow.</p>
+<pre><code><b>while</b> there is a path from s to t in the residual network:
+    flow = min([residual capacity of every edge along this path]) 
+    <b>for</b> every edge (u,v) in this path:
+        residual capacity of (u,v) -= flow
+        residual capacity of (v,u) += flow</code></pre>
+        <p>
+        The Ford-Fulkerson method is called a method and not an algorithm because it does not specify how one should go about finding the augmenting path. The Edmonds-Karp algorithm specifies that we use a breadth-first search to find a viable path in every iteration.</p>
+        <p>
+         Since we are interested in the min-cut, we add one additional step after the main loop. By definition of the $s/t$ cut, $S$ contains the set of vertices reachable from $s$ in the residual network and $T$ contains the rest of the vertices. Therefore, we can run a depth-first search from $s$ using the residual network and deduce which edges are cut.
         </p>
         <p>
-        As these seeds share an edge with the source or sink, they y are hard-coded to be either the foreground or the background. </p>
+        The Edmonds-Karp algorithm is an $O(VE^2)$ algorithm. An augmenting path can be found in $O(E)$, and the length of such path is $O(V)$. Since every iteration at least one edge becomes fully saturated, the number of times the same path is found to be the augmenting path is $O(V)$, so the total number of times we can find an augmenting path is bounded by $O(VE)$. The body of the while loop runs in $O(E)$ time, so in total the time complexity is $O(VE^2)$. An accessible proof can be found in CLRS.
+        </p>
+        <p><b>Push Relabel Algorithm </b></p>
         <p>
-        Now with the graph full defined, we can run a graph cut algorithm to find the minimum cut. 
-      <h2> Max Flow Algorithm</h2>
-      <p>
-      There are several algorithms for finding the maximum flow. In this project, we explore the efficiency of Edmonds-Karp algorithm, an implementation of the Ford-Fulkerson method. This is a very standard, straightforward algorithm, but is often slow in practice. </p>
-      <p>
-      First, we define a residual network to be the same network but with capacity $c_f(u,v)=c(u,v)-f(u,v)$ and no flow. The idea behind the Ford-Fulkerson method is that if there exists a path from $s$ to $t$ in the residual network, then we can augment the current flow by this path. This path is called the augmenting path. The augmentation of this path is equal to the smallest residual capacity along this path. Once no augmenting path can be found, the current flow must be the max flow.</p>
-      <p>
-      The Ford-Fulkerson method is called a method and not an algorithm because it does not specify how one should go about finding the an augmenting path. One fully defined implementation of the Ford-Fulkerson method is the Edmonds-Karp algorithm. It uses a breadth-first search to find a viable path in every iteration. 
-      <h2> Demo </h2>
-      <h2> Run time and algorithm complexities </h2>
-      <h2> Source Code </h2>
-      <h2> Acknowledgements </h2>
+        In the Push Relabel algorithm, we maintain a "preflow", which is a flow sent through the network but does not necessarily satisfy the flow conservation. In a preflow, the flow entering a vertex can be more than the flow exiting the vertex. Given a preflow, a vertex can have an excess flow equal to the difference between the flow entering the vertex and the flow exiting the vertex. A vertex with excess flow is called an overflowing vertex.</p>
+        <p>
+        In addition, we augment each vertex with a height attribute. Let $h(u)$ denote the height of a vertex u. The heights determine how a flow can be pushed. We can only push a flow from a higher vertex to a lower vertex, and not the other way around.
+        </p>
+        <p>
+        We start off by saturating all outgoing edges from $s$. This gives a valid preflow. We also set the height of $s$ to be the number of vertices, and all other heights 0. The algorithm centers around two main operations: push and relabel. For a given vertex $u$, we can push it by finding an outgoing edge from $u$ that is not saturated. The push to this edge is equal to the minimum of the residual capacity of the edge and the excess flow of $u$. Once the flow is pushed, the excess flow at $u$ falls by the amount of the pushed flow, and the excess flow at $v$ increases by the same amount. Not all edges can be pushed, however. In that case, we will relabel $u$ by setting the height of $u$ to be 
+          $$h(u)=1+\min\{h(v)|(u,v)\in E_f\}$$
+      </p>
+<pre><code><b>while</b> there exists an overflowing vertex u:
+    push(u) or relabel(u) </code></pre>
+        <p>
+        The Push Relabel algorithm runs in $O(V^2E)$ time, an improvement upon the Edmonds-Karp algorithm. We prove this by bounding the number of times a vertex can be found overflowing. </p>
+        <h2 id="usage"> Usage </h2>
+        <p>
+        The source code is available for download at <a href=https://github.com/julie-jiang/image-segmentation/>https://github.com/julie-jiang/image-segmentation/</a>.
+        Make sure you have the following dependencies installed:</p>
+          <ul> 
+            <li>Python 2 or 3</li>
+            <li><a href=https://opencv.org/>OpenCV</a> for python</li>
+            <li>NumPy</li>
+          </li>
+        </ul>
+        <p>
+        To run the program, provide a JPG image and run</p>
+<pre><code>$ python imagesegmentation.py yourImage.jpg</code></pre>
+        <p>
+        A window will soon pop up prompting you to plant object (foreground) seeds. Use your cursor to mark points or draw lines on the window to label any part of the graph as foreground. Once you're done, press to continue. A second window will now pop up prompting you to plant background seeds. As before, press ESC to continue. In about half a minute, the resulting image segmented image will be shown. Press ESC when you're ready to quit the program. The seeded image and the segmented image will both be saved.</p>
+        <figure id="usagePics">
+          <img src="images/usageOBJ.png", alt="Planting foreground seeds">
+          <img src="images/usageBKG.png", alt="Planting background seeds">
+          <img src="images/usageSegmentation.png", alt="Resulting segmentation based on the planted seeds">
+          <figcaption>Image segmentation based on seeds planted by the user</figcaption>
+        </figure>
+        <p>
+        The program uses the Edmonds-Karp algorithm by default. To use the Push-Relabel algorithm, add the flag <code> --algorithm pr </code>.
+      </p>
+        <h2 id="limits"> Limitations </h2>
+          <p>
+          As the size of the network flow graph grows quadratically with the size of the input image, the program should only be used on very small images. Empirically, we found that the program runs reasonably fast (under a minute) on an image of size 30x30 pixels. Therefore, all input images will be resized to 30x30 at the beginning of the program. The following example images look big because bigger images are easier on the eyes and also because marking pixels using OpenCV is only accurate when the image is big enough. All images are sized up before being displayed or saved.  </p>
+
+          <p> Furthermore, the program may fail to identify the correct cuts. For example, if there isn't sufficient seeds, then the program may only only cut between the source or sink vertex and the pixel vertices, which is corresponds to no actual cuts in our image, or it may try to cut only around the seeds. One solution is to increase the number of seeds. Another, introduced by Shi and Malik, is a concept called normalized cuts in <i> Normalized cuts and image segmentation</i>, which penalizes cuts that only partitions a small localized region of the image.</p>
+        
+        <h2 id="res"> Results </h2>
+          
+          <p>The following is a series of seeded images and the resulting segmentations. </p>
+          
+          <figure class="results">
+            <img src="images/babyseeded.jpg", alt="babyseeded.jpg">
+            <img src="images/babycut.jpg", alt="babycut.jpg">
+          </figure>
+          <figure class="results">
+            <img src="images/test2seeded.jpg", alt="test2seeded.jpg">
+            <img src="images/test2cut.jpg", alt="test2cut.jpg">
+          </figure>
+          <figure class="results">
+            <img src="images/test3seeded.jpg", alt="test3seeded.jpg">
+            <img src="images/test3cut.jpg", alt="test3cut.jpg">
+          </figure>
+
+
+        <h2 id="ref"> References </h2>
+        <ul>
+          <li>Boykov, Yuri, and Gareth Funka-Lea. <a href="https://link.springer.com/content/pdf/10.1007%2Fs11263-006-7934-5.pdf">Graph cuts and efficient ND image segmentation."</a> International journal of computer vision 70, no. 2 (2006): 109-131. </li>
+          <li>Boykov, Yuri Y., and M-P. Jolly. <a href="http://www.csd.uwo.ca/~yuri/Papers/iccv01.pdf"> "Interactive graph cuts for optimal boundary & region segmentation of objects in ND images."</a> In Computer Vision, 2001. ICCV 2001. Proceedings. Eighth IEEE International Conference on, vol. 1, pp. 105-112. IEEE, 2001.</li>
+          <li>Boykov, Yuri, and Vladimir Kolmogorov. <a href="http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=1316848"> "An experimental comparison of min-cut/max-flow algorithms for energy minimization in vision."</a> IEEE transactions on pattern analysis and machine intelligence 26, no. 9 (2004): 1124-1137.</li>
+          <li> Shi, Jianbo, and Jitendra Malik. <a href="https://people.eecs.berkeley.edu/~malik/papers/SM-ncut.pdf"> "Normalized cuts and image segmentation."</a> IEEE Transactions on pattern analysis and machine intelligence 22, no. 8 (2000): 888-905.</li> 
+          <li>Eriksson, Anders P., Olof Barr, and Kalle Astrom. <a href="http://www2.maths.lth.se/vision/publdb/reports/pdf/eriksson-barr-etal-ssia-06.pdf"> "Image segmentation using minimal graph cuts."</a> (2006). </li>
+          <li> Felzenszwalb, Pedro F., and Daniel P. Huttenlocher. <a href="http://people.cs.uchicago.edu/~pff/papers/seg-ijcv.pdf"> "Efficient graph-based image segmentation."</a> International journal of computer vision 59, no. 2 (2004): 167-181. </li>
+
+        </ul>
+
+
+      </div>
     </body>
   </html>

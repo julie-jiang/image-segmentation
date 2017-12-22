@@ -27,7 +27,7 @@ LOADSEEDS = False
 # drawing = False
 
 def show_image(image):
-    windowname = "window"
+    windowname = "Segmentation"
     cv2.namedWindow(windowname, cv2.WINDOW_NORMAL)
     cv2.startWindowThread()
     cv2.imshow(windowname, image)
@@ -58,7 +58,7 @@ def plantSeed(image):
         print "Planting", pixelType, "seeds"
         global drawing
         drawing = False
-        windowname = "window"
+        windowname = "Plant " + pixelType + " seeds"
         cv2.namedWindow(windowname, cv2.WINDOW_AUTOSIZE)
         cv2.setMouseCallback(windowname, onMouse, pixelType)
         while (1):
@@ -142,11 +142,11 @@ def displayCut(image, cuts):
     r, c = image.shape
     image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
     for c in cuts:
-        colorPixel(c[0] // r, c[0] % r)
-        colorPixel(c[1] // r, c[1] % r)
-
+        if c[0] != SOURCE and c[0] != SINK and c[1] != SOURCE and c[1] != SINK:
+            colorPixel(c[0] // r, c[0] % r)
+            colorPixel(c[1] // r, c[1] % r)
     return image
-    # show_image(image)
+    
 
 
 def imageSegmentation(imagefile, size=(30, 30), algo="ff"):
@@ -165,6 +165,7 @@ def imageSegmentation(imagefile, size=(30, 30), algo="ff"):
     print cuts
     image = displayCut(image, cuts)
     image = cv2.resize(image, (0, 0), fx=SF, fy=SF)
+    show_image(image)
     savename = pathname + "cut.jpg"
     cv2.imwrite(savename, image)
     print "Saved image as", savename
