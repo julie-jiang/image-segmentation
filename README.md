@@ -18,7 +18,7 @@ A new window will pop up showing your image. Use your cursor to mark object seed
 1. `test1.jpg`
 
 Original, seeded, and segmented image
-![test1.jpg](test1.jpg)![test1seeds.jpg](test1seeds.jpg)![test1cut.jpg](test1cut.jpg)
+![test1.jpg](test1.jpg) ![test1seeds.jpg](test1seeds.jpg)![test1cut.jpg](test1cut.jpg)
 
 2. `test2.jpg`
 

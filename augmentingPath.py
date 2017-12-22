@@ -32,12 +32,11 @@ def dfs(rGraph, V, s, visited):
 
 
 
-def fordFulkerson(graph, s, t):
-    print "running ford fulkerson"
+def augmentingPath(graph, s, t):
+    print "Running augmenting path algorithm"
     rGraph = graph.copy()
     V = len(graph)
     parent = np.zeros(V, dtype='int32')
-    print "kickstarting while loop"
 
     while bfs(rGraph, V, s, t, parent):
         
@@ -59,10 +58,10 @@ def fordFulkerson(graph, s, t):
     visited = np.zeros(V, dtype=bool)
     dfs(rGraph, V, s, visited)
 
-    cut = []
+    cuts = []
 
     for i in xrange(V):
         for j in xrange(V):
             if visited[i] and not visited[j] and graph[i][j]:
-                cut.append((i, j))
-    return cut
+                cuts.append((i, j))
+    return cuts

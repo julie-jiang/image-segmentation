@@ -1,0 +1,37 @@
+@import url('https://fonts.googleapis.com/css?family=Open+Sans:700|Lato:400|Lora:400,700');
+body {
+    margin: auto;
+    padding: 0;
+    width: 850px;
+}
+
+h1 {
+    font-family: "Open Sans", Helvetica, sans-serif;
+    font-size: 3em;
+}
+
+h2 {
+    font-family: "Lato", Helvetica, sans-serif;
+    font-size: 2em;
+    color:#282828;
+}
+`
+h3 {
+    font-family: "Lora", "PT Serif", serif;
+    color: #3A3A3A;
+    font-size: 1em;
+}
+
+p {
+    font-family: "Lora", "PT Serif", serif;
+    font-size: 1em;
+    line-height: 150%;
+    color: #282828;
+}
+
+ul li {
+    font-family: "Lora", "PT Serif", serif;
+    font-size: 1em;
+    line-height: 150%;
+    color: #282828;
+}

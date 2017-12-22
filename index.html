@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+  <html>
+    <head>
+      <title>Image Segmentation with Graph Cuts</title>
+      <link rel="stylesheet" type="text/css" href=style.css>
+      <script type = "text/x-mathjax-config">
+        MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+      </script>
+      <script type="text/javascript" async
+        src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+    </script>
+    </head>
+    <body>
+      <h1> Image Segmentation with Graph Cuts</h1>
+      <h3> By Julie Jiang </h3>
+        <p> Graph algorithms has been successfully applied to a number of computer vision and image processing problems. Our interest is in the application of graph cut algorithms to the problem of image segmentation. This is arguably one of the simplist applications.</p>
+        <p>
+        This project focuses on using graph cuts to divide an image into background and foreground segments. The framework consists of two parts. First, we build a network flow graph based on the input image. Then we run a max flow algorithm in order to find the min cut, which produces our optimal segmentation.
+         </p>
+      <h2> Network Flow </h2>
+        <p> A network flow $G=(V,E)$ is a graph where each edge has a <i> capacity </i> and a <i> flow </i>. We designate two vertices in the network flow to be the source vertex $s$ and the sink vertex $t$, respectively. We want to find the maximum amount of flow that could be delivered from $s$ to $t$, while satisfying the following constraints. </p>
+        <p>
+          <ul>
+            <li><b>Capacity constraint: </b> Each edge $(u,v)\in E$ has a nonnegative capacity $c(u,v)$ that must be greater than of equal to its flow $f(u,v)$.
+              $$0\leq f(u,v)\leq c(u,v)$$
+            </li>
+            <li><b>Flow conservation: </b> For all vertices $u\in V-{s,t}$, we require that the inflow of the vertex is equal to its outflow.
+              $$\sum_{v\in V}f(v,u)=\sum_{v\in V}f(u,v)$$
+            But $s$ can have unlimited inflow, and $t$ can have unlimited outflow.
+            </li>
+          </ul>
+        </p>
+        <p> The flow of the network is the flow we can send through some path from $s$ to $t$, which, by conservation of flow, is equal to the inflow of $s$ or the outflow of $t$.  An $s/t$ cut is a partitioning of the vertices into two disjoint subsets such that one contains $s$ and the other contains $t$. The value of an $s/t$ cut is total flow of the edges passing through the cut.
+        </p>
+        <p>
+        As stated by the <b> max-flow min-cut theorem </b>, the maximum amount of flow passing from the source to the sink is equivalent to the net flow of the edges in the minimum cut. So by solving the max flow problem, we directly solve the min cut problem as well. We will discuss algorithms for finding the max flow or min cut later.
+        </p> 
+
+      <h2> Image to Graph </h2>
+        <p>
+        One of the most challenging thing about this project is how to transform an image into a graph. <i>Graph cuts and efficient N-D image segmentation</i> by Boykov and Funka-Lea, the authors described in great detail how to define a graph based on an image. My implementation closely follows their idea of constructing the graph.
+        </p>
+        <p>
+        To begin with, a pixel in the image is a vertex in the graph. In addition, we also have two extra vertices which acts as the source and the sink. To avoid confusion, we call vertices that are neither the source nor the sink <i>pixel vertices</i>. 
+        </p>
+        <p>
+        There are two types of edges in our graph. The first type is called $n$-links, which connects neighboring pixel vertices in a 4-neighboring system. The second type of edges are called $t$-links. These links connect the source or sink vertex with the pixel vertices. 
+        </p>
+        <p>The $n$-link edges must have weights carefully computed in order to reflect inter-pixel similarities. One idea is to let these be the boundary penalty. Let $I_p$ be the brightness, or intensity, of the pixel vertex $p$. For any edge $(p,q)\in E$, we define the boundary penalty $B(I_p, I_q)$ as follows.
+          $$ B(I_p, I_q) = 100\cdot \exp\Bigg(\frac{-(I_p-I_q)^2}{2\sigma ^2}\Bigg)$$
+
+        </p> 
+        <p>This function penalizes a lot when $|I_p-I_q|<\sigma$, and is quite negligible if $|I_p-I_q|>\sigma$. From empirical results, we choose $\sigma=30$. Finally, we multiply the result by 100 and cast the boundary penalty to an integer. This is because network flow models require that the capacities be discrete rather than continuous. 
+        </p>
+        <p> To help with making $t$-links, we prompt the user to highlight at least one pixel vertex as a background pixel and at least one as a foreground pixel. These pixel verties are called seeds. For every background seed there is, we add an edge from the source to the background seed with capacity $\mathcal{K}$ defined as follows. 
+          $$ \mathcal {K} = \max(\{B(I_p, I_q)|(p, q)\in E\}) $$
+        In a similar fashion, We also add edges from the foreground seeds to the sink with capacity $\mathcal{K}$.
+
+        </p>
+        <p>
+        As these seeds share an edge with the source or sink, they y are hard-coded to be either the foreground or the background. </p>
+        <p>
+        Now with the graph full defined, we can run a graph cut algorithm to find the minimum cut. 
+      <h2> Max Flow Algorithm</h2>
+      <p>
+      There are several algorithms for finding the maximum flow. In this project, we explore the efficiency of Edmonds-Karp algorithm, an implementation of the Ford-Fulkerson method. This is a very standard, straightforward algorithm, but is often slow in practice. </p>
+      <p>
+      First, we define a residual network to be the same network but with capacity $c_f(u,v)=c(u,v)-f(u,v)$ and no flow. The idea behind the Ford-Fulkerson method is that if there exists a path from $s$ to $t$ in the residual network, then we can augment the current flow by this path. This path is called the augmenting path. The augmentation of this path is equal to the smallest residual capacity along this path. Once no augmenting path can be found, the current flow must be the max flow.</p>
+      <p>
+      The Ford-Fulkerson method is called a method and not an algorithm because it does not specify how one should go about finding the an augmenting path. One fully defined implementation of the Ford-Fulkerson method is the Edmonds-Karp algorithm. It uses a breadth-first search to find a viable path in every iteration. 
+      <h2> Demo </h2>
+      <h2> Run time and algorithm complexities </h2>
+      <h2> Source Code </h2>
+      <h2> Acknowledgements </h2>
+    </body>
+  </html>

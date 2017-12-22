@@ -3,11 +3,16 @@ import cv2
 import numpy as np
 import os
 import sys
+import argparse
 from math import exp, pow
-from fordfulkerson import fordFulkerson
+from augmentingPath import augmentingPath
+from pushRelabel import pushRelabel
+from boykovKolmogorov import boykovKolmogorov
 
 # np.set_printoptions(threshold=np.inf)
-
+graphCutAlgo = {"ap": augmentingPath, 
+                "pr": pushRelabel, 
+                "bk": boykovKolmogorov}
 SIGMA = 30
 # LAMBDA = 1
 OBJCOLOR, BKGCOLOR = (0, 0, 255), (0, 255, 0)
@@ -17,9 +22,8 @@ OBJ, BKG = "OBJ", "BKG"
 CUTCOLOR = (0, 0, 255)
 
 SOURCE, SINK = -2, -1
-SIZE = 100
+SF = 10
 LOADSEEDS = False
-sf = 10
 # drawing = False
 
 def show_image(image):
@@ -31,94 +35,67 @@ def show_image(image):
     cv2.destroyAllWindows()
     
 def plantSeed(image):
-    
-    if LOADSEEDS:
-        seeds = np.load(pathname + "seeds.npy")
-    else:
-        seeds = np.zeros(image.shape, dtype="uint8")
-        image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
-        image = cv2.resize(image, (0, 0), fx=sf, fy=sf)
 
-        radius = 10
-        thickness = -1 # fill the whole circle
+    def drawLines(x, y, pixelType):
+        if pixelType == OBJ:
+            color, code = OBJCOLOR, OBJCODE
+        else:
+            color, code = BKGCOLOR, BKGCODE
+        cv2.circle(image, (x, y), radius, color, thickness)
+        cv2.circle(seeds, (x // SF, y // SF), radius // SF, code, thickness)
+
+    def onMouse(event, x, y, flags, pixelType):
+        global drawing
+        if event == cv2.EVENT_LBUTTONDOWN:
+            drawing = True
+            drawLines(x, y, pixelType)
+        elif event == cv2.EVENT_MOUSEMOVE and drawing:
+            drawLines(x, y, pixelType)
+        elif event == cv2.EVENT_LBUTTONUP:
+            drawing = False
+
+    def paintSeeds(pixelType):
+        print "Planting", pixelType, "seeds"
         global drawing
         drawing = False
-        
-
-        def drawLines(x, y, pixelType):
-            if pixelType == OBJ:
-                color, code = OBJCOLOR, OBJCODE
-            else:
-                color, code = BKGCOLOR, BKGCODE
-            cv2.circle(image, (x, y), radius, color, thickness)
-            cv2.circle(seeds, (x // sf, y // sf), radius // sf, code, thickness)
-
-            # image[x][y] = color
-            # seeds[x][y] = color
-
-        def onMouse(event, x, y, flags, pixelType):
-            global drawing
-            if event == cv2.EVENT_LBUTTONDOWN:
-                drawing = True
-                drawLines(x, y, pixelType)
-            elif event == cv2.EVENT_MOUSEMOVE and drawing:
-                drawLines(x, y, pixelType)
-            elif event == cv2.EVENT_LBUTTONUP:
-                drawing = False
-
-        def paintSeeds(pixelType):
-            global drawing
-            drawing = False
-            windowname = "window"
-            cv2.namedWindow(windowname, cv2.WINDOW_AUTOSIZE)
-            cv2.setMouseCallback(windowname, onMouse, pixelType)
-            while (1):
-                cv2.imshow(windowname, image)
-                if cv2.waitKey(1) & 0xFF == 27:
-                    break
-            cv2.destroyAllWindows()
-
-        print "plant obj seeds"
-        paintSeeds(OBJ)
-        print "plant bkg seeds"
-        paintSeeds(BKG)
-        seedname = pathname + "seeds.npy"
-        np.save(seedname, seeds)
-        print "Saved seeds as", seedname
-    print "seeds:"
-    print seeds
-
-    savename = pathname + "seeds.jpg"
+        windowname = "window"
+        cv2.namedWindow(windowname, cv2.WINDOW_AUTOSIZE)
+        cv2.setMouseCallback(windowname, onMouse, pixelType)
+        while (1):
+            cv2.imshow(windowname, image)
+            if cv2.waitKey(1) & 0xFF == 27:
+                break
+        cv2.destroyAllWindows()
     
-    cv2.imwrite(savename, image)
     
-    print "Saved seeded image as", savename
+    seeds = np.zeros(image.shape, dtype="uint8")
+    image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
+    image = cv2.resize(image, (0, 0), fx=SF, fy=SF)
 
-    return seeds
+    radius = 10
+    thickness = -1 # fill the whole circle
+    global drawing
+    drawing = False
+    
+
+    paintSeeds(OBJ)
+    paintSeeds(BKG)
+    return seeds, image
 
 
 
 # Large when ip - iq < sigma, and small otherwise
 def boundaryPenalty(ip, iq):
-    # return 100 * exp(- pow(int(ip) - int(iq), 2) / (2 * pow(SIGMA, 2)))
-    bp = 100 * exp(- pow(int(ip) - int(iq), 2) / (2 * pow(SIGMA, 2))) #int(100 * exp(- abs(int(ip) - int(iq)) / SIGMA))
-    # print ip, iq, bp
-    return bp#(2 * pow(SIGMA, 2)))
-
-def regionalPenalty(ip, ap):
-    pass
+    bp = 100 * exp(- pow(int(ip) - int(iq), 2) / (2 * pow(SIGMA, 2)))
+    return bp
 
 def buildGraph(image):
     V = image.size + 2
     graph = np.zeros((V, V), dtype='int32')
-
     K = makeNLinks(graph, image)
-
-    seeds = plantSeed(image)
-    print "got seeds"
+    seeds, seededImage = plantSeed(image)
     makeTLinks(graph, seeds, K)
-
-    return graph
+    return graph, seededImage
 
 def makeNLinks(graph, image):
     K = -float("inf")
@@ -136,19 +113,11 @@ def makeNLinks(graph, image):
                 bp = boundaryPenalty(image[i][j], image[i][j + 1])
                 graph[x][y] = graph[y][x] = bp
                 K = max(K, bp)
-
-    print "finished building nlinks"
-    print graph
     return K
 
 
 
 def makeTLinks(graph, seeds, K):
-    print "making T links"
-    print graph.shape
-    print "k =", K
-
-    
     r, c = seeds.shape
 
     for i in xrange(r):
@@ -164,7 +133,6 @@ def makeTLinks(graph, seeds, K):
             #     graph[x][source] = LAMBDA * regionalPenalty(image[i][j], BKG)
             #     graph[x][sink]   = LAMBDA * regionalPenalty(image[i][j], OBJ)
 
-    print "finished tlinks"
 
 
 def displayCut(image, cuts):
@@ -181,39 +149,46 @@ def displayCut(image, cuts):
     # show_image(image)
 
 
+def imageSegmentation(imagefile, size=(30, 30), algo="ff"):
+    pathname = os.path.splitext(imagefile)[0]
+    image = cv2.imread(imagefile, cv2.IMREAD_GRAYSCALE)
+    image = cv2.resize(image, size)
+    graph, seededImage = buildGraph(image)
+    cv2.imwrite(pathname + "seeded.jpg", seededImage)
 
-
-
-def imageSegmentation():
-    image = cv2.imread(filename, cv2.IMREAD_GRAYSCALE)
-    image = cv2.resize(image, (0, 0), fx= 1 / sf, fy=1 / sf)
-    print image.shape
-    # show_image(image)
-
-    graph = buildGraph(image)
     global SOURCE, SINK
     SOURCE += len(graph) 
     SINK   += len(graph)
-    print graph
-    cuts = fordFulkerson(graph, SOURCE, SINK)
+    
+    cuts = graphCutAlgo[algo](graph, SOURCE, SINK)
     print "cuts:"
     print cuts
     image = displayCut(image, cuts)
-    image = cv2.resize(image, (0, 0), fx=sf, fy=sf)
+    image = cv2.resize(image, (0, 0), fx=SF, fy=SF)
     savename = pathname + "cut.jpg"
     cv2.imwrite(savename, image)
     print "Saved image as", savename
     
 
+def parseArgs():
+    def algorithm(string):
+        if string in graphCutAlgo:
+            return string
+        raise argparse.ArgumentTypeError(
+            "Algorithm should be one of the following:", graphCutAlgo.keys())
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("imagefile")
+    parser.add_argument("--size", "-s", 
+                        default=30, type=int,
+                        help="Defaults to 30x30")
+    parser.add_argument("--algo", "-a", default="ap", type=algorithm)
+    return parser.parse_args()
+
 if __name__ == "__main__":
 
-    if len(sys.argv) != 2:
-        print "missing filename argument"
-
-    else:
-        filename = sys.argv[1]
-        pathname = os.path.splitext(filename)[0]
-        imageSegmentation()
+    args = parseArgs()
+    imageSegmentation(args.imagefile, (args.size, args.size), args.algo)
     
 
 
