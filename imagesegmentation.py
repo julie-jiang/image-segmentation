@@ -55,7 +55,7 @@ def plantSeed(image):
             drawing = False
 
     def paintSeeds(pixelType):
-        print "Planting", pixelType, "seeds"
+        print("Planting", pixelType, "seeds")
         global drawing
         drawing = False
         windowname = "Plant " + pixelType + " seeds"
@@ -100,8 +100,8 @@ def buildGraph(image):
 def makeNLinks(graph, image):
     K = -float("inf")
     r, c = image.shape
-    for i in xrange(r):
-        for j in xrange(c):
+    for i in range(r):
+        for j in range(c):
             x = i * c + j
             if i + 1 < r: # pixel below
                 y = (i + 1) * c + j
@@ -120,8 +120,8 @@ def makeNLinks(graph, image):
 def makeTLinks(graph, seeds, K):
     r, c = seeds.shape
 
-    for i in xrange(r):
-        for j in xrange(c):
+    for i in range(r):
+        for j in range(c):
             x = i * c + j
             if seeds[i][j] == OBJCODE:
                 # graph[x][source] = K
@@ -161,14 +161,14 @@ def imageSegmentation(imagefile, size=(30, 30), algo="ff"):
     SINK   += len(graph)
     
     cuts = graphCutAlgo[algo](graph, SOURCE, SINK)
-    print "cuts:"
-    print cuts
+    print("cuts:")
+    print(cuts)
     image = displayCut(image, cuts)
     image = cv2.resize(image, (0, 0), fx=SF, fy=SF)
     show_image(image)
     savename = pathname + "cut.jpg"
     cv2.imwrite(savename, image)
-    print "Saved image as", savename
+    print("Saved image as", savename)
     
 
 def parseArgs():

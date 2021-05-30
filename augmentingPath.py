@@ -1,4 +1,4 @@
-from Queue import Queue
+from queue import Queue
 import numpy as np
 
 def bfs(rGraph, V, s, t, parent):
@@ -10,7 +10,7 @@ def bfs(rGraph, V, s, t, parent):
 
     while not q.empty():
         u = q.get()
-        for v in xrange(V):
+        for v in range(V):
             if (not visited[v]) and rGraph[u][v] > 0:
                 q.put(v)
                 parent[v] = u
@@ -23,12 +23,12 @@ def dfs(rGraph, V, s, visited):
         v = stack.pop()
         if not visited[v]:
             visited[v] = True
-            stack.extend([u for u in xrange(V) if rGraph[v][u]])
+            stack.extend([u for u in range(V) if rGraph[v][u]])
 
 
 
 def augmentingPath(graph, s, t):
-    print "Running augmenting path algorithm"
+    print("Running augmenting path algorithm")
     rGraph = graph.copy()
     V = len(graph)
     parent = np.zeros(V, dtype='int32')
@@ -53,8 +53,8 @@ def augmentingPath(graph, s, t):
 
     cuts = []
 
-    for i in xrange(V):
-        for j in xrange(V):
+    for i in range(V):
+        for j in range(V):
             if visited[i] and not visited[j] and graph[i][j]:
                 cuts.append((i, j))
     return cuts

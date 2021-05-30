@@ -1,4 +1,4 @@
-from Queue import Queue
+from queue import Queue
 import numpy as np
 import sys
 
@@ -73,7 +73,7 @@ def dfs(rGraph, V, s, visited):
 
 
 def pushRelabel(C, s, t):
-    print "Running push relabel algorithm"
+    print("Running push relabel algorithm")
     def preFlows():
         heights[s] = V
         F[s,:] = C[s,:]
@@ -134,7 +134,7 @@ def pushRelabel(C, s, t):
             relabel(u)
     # Max flow is equal to the excess flow of the sink
     #return vertices[t,1]
-    print "Max flow", excess[t]
+    print("Max flow", excess[t])
     # print C
     # print F
     # print C-F
@@ -172,4 +172,4 @@ if __name__ == "__main__":
              [0, 0, 10, 0, 5, 0, 4],
              [0, 0, 6, 0, 0, 4, 0]]
 
-    print pushRelabel(np.asarray(graph), 0, 6)
+    print(pushRelabel(np.asarray(graph), 0, 6))
