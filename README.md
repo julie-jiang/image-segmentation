@@ -2,7 +2,7 @@
 
 ## Website
 
-For detailed description, please visit https://julie-jiang.github.io/image-segmentation/. 
+For a detailed report, please visit https://julie-jiang.github.io/image-segmentation/. 
 
 ## Usage
 ``` 
